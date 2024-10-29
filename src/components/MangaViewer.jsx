@@ -1,5 +1,5 @@
-import { Component, createElement } from "react";
-import { View, Dimensions } from "react-native";
+import { Component, createElement, Fragment } from "react";
+import { Dimensions, ScrollView } from "react-native";
 import { ReactNativeZoomableView } from "@openspacelabs/react-native-zoomable-view";
 
 export class MangaViewer extends Component {
@@ -28,28 +28,29 @@ export class MangaViewer extends Component {
 
     render() {
         if (!this.props.datasource || this.props.datasource.status === "loading") {
-            return <View />;
+            return null;
         }
 
         return (
-            <View>
-                {this.props.datasource.items?.map((item, index) => {
-                    const imageComponent = this.props.imageContent.get(item);
+            <ReactNativeZoomableView
+                maxZoom={30}
+                minZoom={1}
+                initialZoom={1}
+                bindToBorders={true}
+                panBoundaryPadding={0}
+                contentWidth={this.state.windowWidth}
+                contentHeight={this.state.windowHeight}
+            >
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ height: this.state.windowHeight }}>
+                    <Fragment>{this.props.topContent}</Fragment>
+                    {this.props.datasource.items?.map((item, index) => {
+                        const imageComponent = this.props.imageContent.get(item);
 
-                    return (
-                        <ReactNativeZoomableView
-                            maxZoom={30}
-                            minZoom={1}
-                            initialZoom={1}
-                            bindToBorders={false}
-                            contentWidth={this.state.contentWidth}
-                            contentHeight={this.state.contentHeight}
-                        >
-                            {imageComponent}
-                        </ReactNativeZoomableView>
-                    );
-                })}
-            </View>
+                        return <Fragment key={index}>{imageComponent}</Fragment>;
+                    })}
+                    <Fragment>{this.props.bottomContent}</Fragment>
+                </ScrollView>
+            </ReactNativeZoomableView>
         );
     }
 }

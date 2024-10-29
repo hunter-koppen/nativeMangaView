@@ -1,20 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
-<widget id="kobeon.nativemangaview.NativeMangaView" pluginWidget="true" needsEntityContext="true" offlineCapable="true" supportedPlatform="Native"
+<?xml version="1.0" encoding="utf-8" ?>
+<widget
+    id="kobeon.nativemangaview.NativeMangaView"
+    pluginWidget="true"
+    needsEntityContext="true"
+    offlineCapable="true"
+    supportedPlatform="Native"
     xmlns="http://www.mendix.com/widget/1.0/"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd"
+>
     <name>Native Manga View</name>
-    <description/>
-    <icon/>
+    <description />
+    <icon />
     <properties>
         <propertyGroup caption="General">
             <propertyGroup caption="Datasource">
                 <property key="datasource" type="datasource" isList="true" required="true">
                     <caption>Data source</caption>
-                    <description/>
+                    <description />
+                </property>
+                <property key="topContent" type="widgets" required="false">
+                    <caption>Top content</caption>
+                    <description>Top Content</description>
                 </property>
                 <property key="imageContent" type="widgets" dataSource="datasource" required="false">
                     <caption>List content</caption>
                     <description>Image Content</description>
+                </property>
+                <property key="bottomContent" type="widgets" required="false">
+                    <caption>Bottom content</caption>
+                    <description>Bottom Content</description>
                 </property>
             </propertyGroup>
         </propertyGroup>
