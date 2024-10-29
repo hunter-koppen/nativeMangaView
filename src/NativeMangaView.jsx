@@ -1,9 +1,17 @@
 import { Component, createElement } from "react";
 
-import { HelloWorld } from "./components/HelloWorld";
+import { MangaViewer } from "./components/MangaViewer";
 
 export class NativeMangaView extends Component {
     render() {
-        return <HelloWorld name={this.props.yourName} style={this.props.style} />;
+        return (
+            <MangaViewer
+                datasource={this.props.datasource}
+                datasourceContent={this.props.datasourceContent}
+                imageContent={this.props.imageContent}
+                imageHeight={this.props.imageHeight}
+                imageWidth={this.props.imageWidth}
+            />
+        );
     }
 }

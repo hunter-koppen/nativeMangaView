@@ -24,9 +24,6 @@
   "devDependencies": {
     "@mendix/pluggable-widgets-tools": "^10.15.0"
   },
-  "dependencies": {
-
-  },
   "resolutions": {
     "react": "^18.2.0",
     "react-native": "0.72.7"
@@ -34,5 +31,8 @@
   "overrides": {
     "react": "^18.2.0",
     "react-native": "0.72.7"
+  },
+  "dependencies": {
+    "@openspacelabs/react-native-zoomable-view": "^2.1.6"
   }
 }
