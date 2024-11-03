@@ -1,5 +1,5 @@
 import { Component, createElement, Fragment } from "react";
-import { Dimensions, ScrollView } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 import { ReactNativeZoomableView } from "@openspacelabs/react-native-zoomable-view";
 
 export class MangaViewer extends Component {
@@ -41,14 +41,17 @@ export class MangaViewer extends Component {
                 contentWidth={this.state.windowWidth}
                 contentHeight={this.state.windowHeight}
             >
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ height: this.state.windowHeight }}>
-                    <Fragment>{this.props.topContent}</Fragment>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    style={{ width: "100%", height: this.state.windowHeight }}
+                >
+                    <View style={{ width: "100%" }}>{this.props.topContent}</View>
                     {this.props.datasource.items?.map((item, index) => {
                         const imageComponent = this.props.imageContent.get(item);
 
-                        return <Fragment key={index}>{imageComponent}</Fragment>;
+                        return <View style={{ width: "100%" }} key={index}>{imageComponent}</View>;
                     })}
-                    <Fragment>{this.props.bottomContent}</Fragment>
+                    <View>{this.props.bottomContent}</View>
                 </ScrollView>
             </ReactNativeZoomableView>
         );
