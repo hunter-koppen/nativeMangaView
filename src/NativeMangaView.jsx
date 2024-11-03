@@ -9,7 +9,9 @@ export class NativeMangaView extends Component {
                 datasource={this.props.datasource}
                 datasourceContent={this.props.datasourceContent}
                 topContent={this.props.topContent}
-                imageContent={this.props.imageContent}
+                imageUri={this.props.imageUri}
+                imageWidth={this.props.imageWidth}
+                imageHeight={this.props.imageHeight}
                 bottomContent={this.props.bottomContent}
             />
         );
