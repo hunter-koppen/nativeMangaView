@@ -16,10 +16,6 @@
                     <caption>Top content</caption>
                     <description>Top Content</description>
                 </property>
-                <property key="imageContent" type="widgets" dataSource="datasource" required="false">
-                    <caption>List content</caption>
-                    <description>Image Content</description>
-                </property>
                 <property key="imageUri" type="attribute" dataSource="datasource">
                     <caption>Image URI</caption>
                     <description/>
@@ -44,6 +40,24 @@
                 <property key="bottomContent" type="widgets" required="false">
                     <caption>Bottom content</caption>
                     <description>Bottom Content</description>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Scroll">
+                <property key="scrollPosition" type="attribute" onChange="onScrollChange">
+                    <caption>Scroll position</caption>
+                    <description/>
+                    <attributeTypes>
+                        <attributeType name="Integer"/>
+                    </attributeTypes>
+                </property>
+                <property key="onScrollChange" type="action" required="false">
+                    <caption>On change</caption>
+                    <description></description>
+                </property>
+                <property key="restoreScrollLocation" type="expression" defaultValue="false" required="true">
+                    <caption>Restore scroll location</caption>
+                    <description/>
+                    <returnType type="Boolean" />
                 </property>
             </propertyGroup>
         </propertyGroup>

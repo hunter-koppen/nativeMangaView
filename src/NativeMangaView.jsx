@@ -13,6 +13,8 @@ export class NativeMangaView extends Component {
                 imageWidth={this.props.imageWidth}
                 imageHeight={this.props.imageHeight}
                 bottomContent={this.props.bottomContent}
+                scrollPosition={this.props.scrollPosition}
+                restoreScrollLocation={this.props.restoreScrollLocation.value}
             />
         );
     }

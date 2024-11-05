@@ -1,57 +1,98 @@
 import { Component, createElement, createRef } from "react";
 import { Dimensions, ScrollView, View, Image } from "react-native";
 import { ReactNativeZoomableView } from "@openspacelabs/react-native-zoomable-view";
+import { Big } from "big.js";
 
 export class MangaViewer extends Component {
     state = {
-        windowWidth: Dimensions.get("window").width,
-        windowHeight: Dimensions.get("window").height,
-        isZoomedIn: false
+        window: Dimensions.get("window"),
+        isZoomedIn: false,
+        isScrollViewReady: false
     };
     dimensionListener = null;
     zoomableViewRef = createRef();
+    scrollViewRef = createRef();
+    lastScrollUpdate = Date.now();
 
     componentDidMount() {
-        this.dimensionListener = Dimensions.addEventListener("change", this.handler);
+        this.dimensionListener = Dimensions.addEventListener("change", this.handleDimensionChange);
     }
 
     componentWillUnmount() {
         if (this.dimensionListener && this.dimensionListener.remove) {
             this.dimensionListener.remove();
+        } else {
+            Dimensions.removeEventListener("change", this.handleDimensionChange);
         }
     }
 
-    handler = newDimensions => {
+    handleDimensionChange = newDimensions => {
         this.setState({
-            windowHeight: newDimensions.window.height,
-            windowWidth: newDimensions.window.width
+            window: newDimensions.window
         });
     };
 
     handleDoubleTap = () => {
         const { isZoomedIn } = this.state;
         if (this.zoomableViewRef.current) {
-            if (isZoomedIn) {
-                this.zoomableViewRef.current.zoomTo(1);
-            } else {
-                this.zoomableViewRef.current.zoomTo(1.5);
-            }
-            this.setState({ isZoomedIn: !isZoomedIn });
+            const zoomLevel = isZoomedIn ? 1 : 1.5;
+            this.zoomableViewRef.current.zoomTo(zoomLevel);
+            this.setState(prevState => ({ isZoomedIn: !prevState.isZoomedIn }));
         }
     };
 
-    handleZoomChange = (zoomLevel) => {
-        this.setState({ isZoomedIn: zoomLevel > 1 });
+    handleZoomChange = zoomLevel => {
+        this.setState(() => ({ isZoomedIn: zoomLevel > 1 }));
+    };
+
+    handleScroll = event => {
+        const currentTime = Date.now();
+        if (currentTime - this.lastScrollUpdate > 500) {
+            this.lastScrollUpdate = currentTime;
+
+            const scrollPosition = Math.round(event.nativeEvent.contentOffset.y);
+            if (this.props.scrollPosition) {
+                this.props.scrollPosition.setValue(Big(scrollPosition));
+            }
+        }
+    };
+
+    handleScrollViewLayout = () => {
+        const { restoreScrollLocation, scrollPosition } = this.props;
+
+        if (
+            restoreScrollLocation &&
+            !this.state.isScrollViewReady &&
+            scrollPosition.value &&
+            this.scrollViewRef?.current
+        ) {
+            this.scrollViewRef.current.scrollTo({ y: parseInt(scrollPosition.value, 10), animated: false });
+            this.setState({ isScrollViewReady: true });
+        }
+    };
+
+    calculateImageHeight = (imageWidth, imageHeight) => {
+        const aspectRatio = imageWidth / imageHeight;
+        return this.state.window.width / aspectRatio;
     };
 
     render() {
-        if (!this.props.datasource || this.props.datasource.status === "loading") {
+        const { datasource, imageUri, imageWidth, imageHeight, topContent, bottomContent } = this.props;
+        const { window } = this.state;
+
+        if (!datasource || datasource.status === "loading") {
             return null;
         }
 
         return (
-            <ScrollView style={{ width: this.state.windowWidth, height: this.state.windowHeight }}>
-                <View>{this.props.topContent}</View>
+            <ScrollView
+                ref={this.scrollViewRef}
+                style={{ width: window.width, height: window.height }}
+                onScroll={this.handleScroll}
+                onLayout={this.handleScrollViewLayout}
+                scrollEventThrottle={64}
+            >
+                <View>{topContent}</View>
                 <ReactNativeZoomableView
                     ref={this.zoomableViewRef}
                     maxZoom={30}
@@ -64,17 +105,16 @@ export class MangaViewer extends Component {
                         this.handleZoomChange(zoomableViewEventObject.zoomLevel)
                     }
                 >
-                    {this.props.datasource.items?.map((item, index) => {
-                        const imageUri = this.props.imageUri.get(item).value;
-                        const imageWidth = this.props.imageWidth.get(item).value;
-                        const imageHeight = this.props.imageHeight.get(item).value;
-                        const aspectRatio = imageWidth / imageHeight;
-                        const newHeight = this.state.windowWidth / aspectRatio
+                    {datasource.items?.map(item => {
+                        const uri = imageUri.get(item).value;
+                        const width = imageWidth.get(item).value;
+                        const height = imageHeight.get(item).value;
+                        const newHeight = this.calculateImageHeight(width, height);
 
                         return (
                             <Image
                                 key={item.id}
-                                source={{ uri: imageUri }}
+                                source={{ uri }}
                                 style={{
                                     width: "100%",
                                     height: newHeight,
@@ -84,7 +124,7 @@ export class MangaViewer extends Component {
                         );
                     })}
                 </ReactNativeZoomableView>
-                <View>{this.props.bottomContent}</View>
+                <View>{bottomContent}</View>
             </ScrollView>
         );
     }
