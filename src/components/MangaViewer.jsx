@@ -6,12 +6,12 @@ import { Big } from "big.js";
 export class MangaViewer extends Component {
     state = {
         window: Dimensions.get("window"),
-        isZoomedIn: false,
+        zoomedStates: {},
         isScrollViewReady: false
     };
     dimensionListener = null;
-    zoomableViewRef = createRef();
     scrollViewRef = createRef();
+    zoomableViewRefs = new Map();
     lastScrollUpdate = Date.now();
 
     componentDidMount() {
@@ -32,17 +32,34 @@ export class MangaViewer extends Component {
         });
     };
 
-    handleDoubleTap = () => {
-        const { isZoomedIn } = this.state;
-        if (this.zoomableViewRef.current) {
-            const zoomLevel = isZoomedIn ? 1 : 1.5;
-            this.zoomableViewRef.current.zoomTo(zoomLevel);
-            this.setState(prevState => ({ isZoomedIn: !prevState.isZoomedIn }));
+    handleDoubleTap = itemId => {
+        const { zoomedStates } = this.state;
+        const isZoomedIn = zoomedStates[itemId] || false;
+        const zoomableViewRef = this.zoomableViewRefs.get(itemId);
+        if (zoomableViewRef?.current) {
+            if (isZoomedIn) {
+                zoomableViewRef.current.zoomTo(1);
+            } else {
+                zoomableViewRef.current.zoomTo(1.5);
+            }
+            this.setState(prevState => ({
+                zoomedStates: {
+                    ...prevState.zoomedStates,
+                    [itemId]: !isZoomedIn
+                }
+            }));
+        } else {
+            console.error("ZoomableViewRef is not defined or current is null for item:", itemId);
         }
     };
 
-    handleZoomChange = zoomLevel => {
-        this.setState(() => ({ isZoomedIn: zoomLevel > 1 }));
+    handleZoomChange = (zoomLevel, itemId) => {
+        this.setState(prevState => ({
+            zoomedStates: {
+                ...prevState.zoomedStates,
+                [itemId]: zoomLevel > 1
+            }
+        }));
     };
 
     handleScroll = event => {
@@ -93,27 +110,33 @@ export class MangaViewer extends Component {
                 scrollEventThrottle={64}
             >
                 <View>{topContent}</View>
-                <ReactNativeZoomableView
-                    ref={this.zoomableViewRef}
-                    maxZoom={30}
-                    minZoom={1}
-                    initialZoom={1}
-                    bindToBorders={true}
-                    panBoundaryPadding={0}
-                    onDoubleTapAfter={this.handleDoubleTap}
-                    onZoomAfter={(event, gestureState, zoomableViewEventObject) =>
-                        this.handleZoomChange(zoomableViewEventObject.zoomLevel)
-                    }
-                >
-                    {datasource.items?.map(item => {
-                        const uri = imageUri.get(item).value;
-                        const width = imageWidth.get(item).value;
-                        const height = imageHeight.get(item).value;
-                        const newHeight = this.calculateImageHeight(width, height);
+                {datasource.items?.map(item => {
+                    const uri = imageUri.get(item).value;
+                    const width = imageWidth.get(item).value;
+                    const height = imageHeight.get(item).value;
+                    const newHeight = this.calculateImageHeight(width, height);
 
-                        return (
+                    if (!this.zoomableViewRefs.has(item.id)) {
+                        this.zoomableViewRefs.set(item.id, createRef());
+                    }
+                    const zoomableViewRef = this.zoomableViewRefs.get(item.id);
+
+                    return (
+                        <ReactNativeZoomableView
+                            key={item.id}
+                            ref={zoomableViewRef}
+                            maxZoom={30}
+                            minZoom={1}
+                            initialZoom={1}
+                            bindToBorders={true}
+                            panBoundaryPadding={0}
+                            disablePanOnInitialZoom={true}
+                            onDoubleTapAfter={() => this.handleDoubleTap(item.id)}
+                            onZoomAfter={(event, gestureState, zoomableViewEventObject) =>
+                                this.handleZoomChange(zoomableViewEventObject.zoomLevel, item.id)
+                            }
+                        >
                             <Image
-                                key={item.id}
                                 source={{ uri }}
                                 style={{
                                     width: "100%",
@@ -121,9 +144,9 @@ export class MangaViewer extends Component {
                                     resizeMode: "cover"
                                 }}
                             />
-                        );
-                    })}
-                </ReactNativeZoomableView>
+                        </ReactNativeZoomableView>
+                    );
+                })}
                 <View>{bottomContent}</View>
             </ScrollView>
         );
