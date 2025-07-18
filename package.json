@@ -22,7 +22,7 @@
     "release": "pluggable-widgets-tools release:native"
   },
   "devDependencies": {
-    "@mendix/pluggable-widgets-tools": "^10.15.0"
+    "@mendix/pluggable-widgets-tools": "^10.21.2"
   },
   "resolutions": {
     "react": "^18.2.0",
@@ -33,6 +33,6 @@
     "react-native": "0.72.7"
   },
   "dependencies": {
-    "@openspacelabs/react-native-zoomable-view": "^2.1.6"
+    "react-native-photo-view-next": "^2.0.1"
   }
 }
