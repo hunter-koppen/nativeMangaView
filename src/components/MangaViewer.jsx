@@ -84,7 +84,8 @@ export class MangaViewer extends Component {
                             source={{ uri }}
                             minimumZoomScale={1}
                             maximumZoomScale={3}
-                            androidScaleType="center"
+                            androidScaleType="centerCrop"
+                            scaleType="centerCrop"
                             style={{
                                 width: window.width,
                                 height: newHeight
