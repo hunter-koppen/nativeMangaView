@@ -1,5 +1,5 @@
 import { Component, createElement, createRef } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
+import { Dimensions, View, FlatList } from "react-native";
 import PhotoView from "react-native-photo-view-next";
 import { Big } from "big.js";
 
@@ -45,7 +45,7 @@ export class MangaViewer extends Component {
         const { restoreScrollLocation, scrollPosition } = this.props;
 
         if (restoreScrollLocation && scrollPosition.value && this.scrollViewRef?.current) {
-            this.scrollViewRef.current.scrollTo({ y: parseInt(scrollPosition.value, 10), animated: false });
+            this.scrollViewRef.current.scrollToOffset({ offset: parseInt(scrollPosition.value, 10), animated: false });
         }
     };
 
@@ -54,8 +54,34 @@ export class MangaViewer extends Component {
         return this.state.window.width / aspectRatio;
     };
 
+    renderImage = ({ item }) => {
+        const { imageUri, imageWidth, imageHeight } = this.props;
+        const { window } = this.state;
+
+        const uri = imageUri.get(item).value;
+        const width = imageWidth.get(item).value;
+        const height = imageHeight.get(item).value;
+        const newHeight = this.calculateImageHeight(width, height);
+
+        return (
+            <PhotoView
+                source={{ uri }}
+                minimumZoomScale={1}
+                maximumZoomScale={3}
+                androidScaleType="centerCrop"
+                scaleType="centerCrop"
+                style={{
+                    width: window.width,
+                    height: newHeight
+                }}
+            />
+        );
+    };
+
+    keyExtractor = item => item.id;
+
     render() {
-        const { datasource, imageUri, imageWidth, imageHeight, topContent, bottomContent } = this.props;
+        const { datasource, topContent, bottomContent } = this.props;
         const { window } = this.state;
 
         if (!datasource || datasource.status === "loading") {
@@ -63,38 +89,20 @@ export class MangaViewer extends Component {
         }
 
         return (
-            <ScrollView
+            <FlatList
                 ref={this.scrollViewRef}
                 style={{ width: window.width, height: window.height }}
+                data={datasource.items}
+                renderItem={this.renderImage}
+                keyExtractor={this.keyExtractor}
+                ListHeaderComponent={<View>{topContent}</View>}
+                ListFooterComponent={<View>{bottomContent}</View>}
                 onScroll={this.handleScroll}
                 onLayout={this.handleScrollViewLayout}
                 scrollEventThrottle={64}
                 nestedScrollEnabled={true}
-            >
-                <View>{topContent}</View>
-                {datasource.items?.map(item => {
-                    const uri = imageUri.get(item).value;
-                    const width = imageWidth.get(item).value;
-                    const height = imageHeight.get(item).value;
-                    const newHeight = this.calculateImageHeight(width, height);
-
-                    return (
-                        <PhotoView
-                            key={item.id}
-                            source={{ uri }}
-                            minimumZoomScale={1}
-                            maximumZoomScale={3}
-                            androidScaleType="centerCrop"
-                            scaleType="centerCrop"
-                            style={{
-                                width: window.width,
-                                height: newHeight
-                            }}
-                        />
-                    );
-                })}
-                <View>{bottomContent}</View>
-            </ScrollView>
+                initialNumToRender={datasource.items?.length || 0}
+            />
         );
     }
 }
